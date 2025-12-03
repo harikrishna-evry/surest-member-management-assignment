@@ -9,7 +9,13 @@ import org.springframework.cache.annotation.EnableCaching;
 public class MemberManagementApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MemberManagementApplication.class, args);
-	}
+
+        SpringApplication.run(MemberManagementApplication.class, args);
+
+        System.out.println(java.util.TimeZone.getDefault().getID());
+
+    }
+
+
 
 }
