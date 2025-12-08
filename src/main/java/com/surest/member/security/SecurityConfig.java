@@ -52,11 +52,12 @@ public class SecurityConfig {
                 .authenticationProvider(daoAuthenticationProvider)
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+
+                        .requestMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/v1/members/**")
                         .hasAnyRole("USER", "ADMIN")
-
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/members/**")
                         .hasRole("ADMIN")

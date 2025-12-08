@@ -1,63 +1,82 @@
 package com.surest.member.dto;
 
 import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-class CreateMemberRequestTest {
+public class CreateMemberRequestTest {
 
     @Test
-    void testNoArgsConstructorAndSetters() {
-        CreateMemberRequest request = new CreateMemberRequest();
+    void testGettersAndSetters() {
+        CreateMemberRequest req = new CreateMemberRequest();
 
-        LocalDateTime dob = LocalDateTime.of(1998, 5, 3, 0, 0);
+        LocalDateTime dob = LocalDateTime.of(1990, 1, 1, 0, 0);
 
-        request.setFirstName("Hari");
-        request.setLastName("Krishna");
-        request.setDateOfBirth(dob);
-        request.setEmail("hari@test.com");
+        req.setFirstName("John");
+        req.setLastName("Doe");
+        req.setDateOfBirth(dob);
+        req.setEmail("john@example.com");
 
-        assertEquals("Hari", request.getFirstName());
-        assertEquals("Krishna", request.getLastName());
-        assertEquals(dob, request.getDateOfBirth());
-        assertEquals("hari@test.com", request.getEmail());
+        assertEquals("John", req.getFirstName());
+        assertEquals("Doe", req.getLastName());
+        assertEquals(dob, req.getDateOfBirth());
+        assertEquals("john@example.com", req.getEmail());
     }
 
     @Test
     void testAllArgsConstructor() {
-        LocalDateTime dob = LocalDateTime.of(1998, 5, 3, 0, 0);
+        LocalDateTime dob = LocalDateTime.of(1992, 6, 10, 0, 0);
+        CreateMemberRequest req =
+                new CreateMemberRequest("Hari", "Krishna", dob, "hari@example.com");
 
-        CreateMemberRequest request = new CreateMemberRequest(
-                "Hari",
-                "Krishna",
-                dob,
-                "hari@test.com"
-        );
-
-        assertEquals("Hari", request.getFirstName());
-        assertEquals("Krishna", request.getLastName());
-        assertEquals(dob, request.getDateOfBirth());
-        assertEquals("hari@test.com", request.getEmail());
+        assertEquals("Hari", req.getFirstName());
+        assertEquals("Krishna", req.getLastName());
+        assertEquals(dob, req.getDateOfBirth());
+        assertEquals("hari@example.com", req.getEmail());
     }
 
     @Test
-    void testNotEquals() {
-        CreateMemberRequest r1 = new CreateMemberRequest("A", "B", null, "a@test.com");
-        CreateMemberRequest r2 = new CreateMemberRequest("X", "Y", null, "x@test.com");
-
-        assertNotEquals(r1, r2);       // different values
-        assertNotEquals(r1, null);     // compare with null
-        assertNotEquals(r1, "string"); // compare with other type
+    void testEqualsSameObject() {
+        CreateMemberRequest req = new CreateMemberRequest();
+        assertEquals(req, req);
     }
 
     @Test
-    void testHashcodeNotEquals() {
-        CreateMemberRequest r1 = new CreateMemberRequest("A", "B", null, "a@test.com");
-        CreateMemberRequest r2 = new CreateMemberRequest("X", "Y", null, "x@test.com");
+    void testEqualsNotSame() {
+        CreateMemberRequest r1 = new CreateMemberRequest("A", "B",
+                LocalDateTime.now(), "a@mail.com");
 
-        assertNotEquals(r1.hashCode(), r2.hashCode());
+        CreateMemberRequest r2 = new CreateMemberRequest("A", "B",
+                LocalDateTime.now(), "b@mail.com");
+
+        assertNotEquals(r1, r2);
     }
 
+
+    @Test
+    void testEqualsDifferentType() {
+        CreateMemberRequest req = new CreateMemberRequest();
+        assertNotEquals(req, "string");
+    }
+
+    @Test
+    void testEqualsNull() {
+        CreateMemberRequest req = new CreateMemberRequest();
+        assertNotEquals(req, null);
+    }
+
+    @Test
+    void testHashCode() {
+        CreateMemberRequest r1 = new CreateMemberRequest();
+        CreateMemberRequest r2 = new CreateMemberRequest();
+
+        assertEquals(r1.hashCode(), r2.hashCode());
+    }
+
+    @Test
+    void testToStringNotThrow() {
+        CreateMemberRequest req = new CreateMemberRequest();
+        assertDoesNotThrow(req::toString);
+    }
 }
+

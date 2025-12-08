@@ -1,8 +1,11 @@
 package com.surest.member.integration;
 
 import com.surest.member.dto.CreateMemberRequest;
+import com.surest.member.dto.MemberResponse;
 import com.surest.member.entity.Member;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -11,43 +14,70 @@ import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
+//@ActiveProfiles("test")
 @Import(NoSecurityConfig.class)
 class MemberControllerRestTemplateIT {
 
+    private static final Logger log = LoggerFactory.getLogger(MemberControllerRestTemplateIT.class);
     @Autowired
     private TestRestTemplate rest;
 
+
     @Test
     void createMember_persists_andReturns201() {
+
+        String email = "jane" + System.currentTimeMillis() + "@example.com";
+        log.info("Email used for test: {}", email);
+
         CreateMemberRequest req = new CreateMemberRequest();
         req.setFirstName("Jane");
         req.setLastName("Smith");
-        req.setEmail("jane.smith@example.com");
+        req.setEmail(email);
         req.setDateOfBirth(LocalDateTime.of(1990, 1, 1, 0, 0));
 
-        ResponseEntity<Member> created = rest.postForEntity("/api/v1/members", req, Member.class);
-        assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        Member body = created.getBody();
-        assertThat(body).isNotNull();
-        UUID id = body.getId();
-        assertThat(id).isNotNull();
+        log.info(req.getEmail());
 
-        Member fetched = rest.getForObject("/api/v1/members/{id}", Member.class, id);
-        assertThat(fetched.getEmail()).isEqualTo("jane.smith@example.com");
+        ResponseEntity<MemberResponse> created =
+                rest.postForEntity("/api/v1/members", req, MemberResponse.class);
+
+        log.info("Body: {}", created.getBody());
+
+
+        assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+
+        MemberResponse saved = created.getBody();
+        assertThat(saved).isNotNull();
+        assertThat(saved.getId()).isNotNull();
+        assertThat(saved.getFirstName()).isEqualTo("Jane");
+        assertThat(saved.getEmail()).isEqualTo(email);
+        log.info("Saved Email: {}", saved.getEmail());
+        assertThat(saved.getCreatedAt()).isNotNull();
+        assertThat(saved.getUpdatedAt()).isNotNull();
+
+
+        MemberResponse fetched =
+                rest.getForObject("/api/v1/members/{id}", MemberResponse.class, saved.getId());
+
+        assertThat(fetched).isNotNull();
         assertThat(fetched.getFirstName()).isEqualTo("Jane");
+        assertThat(fetched.getEmail()).isEqualTo(email);
+        log.info("Fetched Email: {}", fetched.getEmail());
     }
 
+
     @Test
-    @Sql(statements = "INSERT INTO member (id, first_name, last_name, date_of_birth, email, created_at, updated_at) " +
-            "VALUES ('00000000-0000-0000-0000-000000000010','Old','Name','1980-01-01','old@example.com', NOW(), NOW())")
+    @Sql(statements = "DELETE FROM member WHERE id = '00000000-0000-0000-0000-000000000010'")
+    @Sql(statements = "INSERT INTO member (id, first_name, last_name, date_of_birth, email, created_at, updated_at, version) VALUES ('00000000-0000-0000-0000-000000000010','Old','Name','1980-01-01','old@example.com', NOW(), NOW(),0)")
     void updateMember_changesPersisted() {
+
         UUID id = UUID.fromString("00000000-0000-0000-0000-000000000010");
 
         CreateMemberRequest update = new CreateMemberRequest();
@@ -64,8 +94,8 @@ class MemberControllerRestTemplateIT {
     }
 
     @Test
-    @Sql(statements = "INSERT INTO member (id, first_name, last_name, date_of_birth, email, created_at, updated_at) " +
-            "VALUES ('00000000-0000-0000-0000-000000000020','Delete','Me','1970-01-01','del@example.com', NOW(), NOW())")
+    @Sql(statements = "INSERT INTO member (id, first_name, last_name, date_of_birth, email, created_at, updated_at, version) " +
+            "VALUES ('00000000-0000-0000-0000-000000000020','Delete','Me','1970-01-01','del@example.com', NOW(), NOW(), 0)")
     void deleteMember_removesEntity() {
         UUID id = UUID.fromString("00000000-0000-0000-0000-000000000020");
 
@@ -75,5 +105,8 @@ class MemberControllerRestTemplateIT {
 
         assertThat(after.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
-}
 
+
+
+
+}

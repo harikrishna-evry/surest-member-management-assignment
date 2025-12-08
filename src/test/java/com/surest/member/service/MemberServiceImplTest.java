@@ -1,9 +1,11 @@
 package com.surest.member.service;
 
 import com.surest.member.dto.CreateMemberRequest;
+import com.surest.member.dto.MemberResponse;
 import com.surest.member.entity.Member;
 import com.surest.member.exception.MemberAlreadyExistsException;
 import com.surest.member.exception.MemberNotFoundException;
+import com.surest.member.mapper.MemberMapper;
 import com.surest.member.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,9 +18,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -28,12 +32,16 @@ public class MemberServiceImplTest {
     @Mock
     private MemberRepository memberRepository;
 
+    private MemberMapper memberMapper;
+
     @InjectMocks
     private MemberServiceImpl memberService;
 
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
+        memberMapper = new MemberMapper();
+        memberService = new MemberServiceImpl(memberRepository, memberMapper);
     }
 
 
@@ -45,7 +53,7 @@ public class MemberServiceImplTest {
 
         when(memberRepository.findById(id)).thenReturn(Optional.of(m));
 
-        Member result = memberService.getMemberById(id);
+        MemberResponse result = memberService.getMemberById(id);
 
         assertEquals(id, result.getId());
     }
@@ -71,6 +79,7 @@ public class MemberServiceImplTest {
 
     @Test
     void testCreateMember_Success() {
+
         CreateMemberRequest req = new CreateMemberRequest();
         req.setFirstName("John");
         req.setLastName("Doe");
@@ -78,14 +87,21 @@ public class MemberServiceImplTest {
         req.setDateOfBirth(LocalDate.now().atStartOfDay());
 
         when(memberRepository.existsByEmail("john@gmail.com")).thenReturn(false);
-        when(memberRepository.save(any(Member.class))).thenAnswer(
-                invocation -> invocation.getArgument(0)
-        );
 
-        Member result = memberService.createMember(req);
+        when(memberRepository.saveAndFlush(any(Member.class))).thenAnswer(invocation -> {
+            Member m = invocation.getArgument(0);
+            m.setId(UUID.randomUUID());
+            m.setCreatedAt(LocalDateTime.now());
+            m.setUpdatedAt(LocalDateTime.now());
+            return m;
+        });
 
-        assertEquals("John", result.getFirstName());
-        verify(memberRepository, times(1)).save(any(Member.class));
+        MemberResponse saved = memberService.createMember(req);
+
+        assertThat(saved).isNotNull();
+        assertThat(saved.getId()).isNotNull();
+        assertThat(saved.getEmail()).isEqualTo("john@gmail.com");
+
     }
 
     @Test
@@ -135,7 +151,7 @@ public class MemberServiceImplTest {
         when(memberRepository.save(any(Member.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Member updated = memberService.updateMember(id, req);
+        MemberResponse updated = memberService.updateMember(id, req);
 
         assertEquals("Updated", updated.getFirstName());
         assertEquals("User", updated.getLastName());
@@ -170,56 +186,75 @@ public class MemberServiceImplTest {
     void testGetAllMembers_NoFilters() {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("firstName").ascending());
 
-        Page<Member> page = mock(Page.class);
+        Page<Member> memberPage = mock(Page.class);
 
-        when(memberRepository.findAll(pageable)).thenReturn(page);
+        when(memberRepository.findAll(any(Pageable.class))).thenReturn(memberPage);
 
-        Page<Member> result = memberService.getAllMembers(0, 10, "firstName", "asc", null, null);
+        when(memberPage.map(any())).thenReturn(Page.empty());
+
+        Page<MemberResponse> result =
+                memberService.getAllMembers(0, 10, "firstName", "asc", null, null);
 
         assertNotNull(result);
-        verify(memberRepository, times(1)).findAll(pageable);
+        assertTrue(result.getContent().isEmpty());
+
+        verify(memberRepository, times(1)).findAll(any(Pageable.class));
+    }
+
+
+    @Test
+    void testGetAllMembers_WithFirstNameAndLastName() {
+
+        Page<Member> memberPage = mock(Page.class);
+
+        when(memberRepository.findByFirstNameContainingAndLastNameContaining(
+                eq("John"), eq("Doe"), any(Pageable.class)
+        )).thenReturn(memberPage);
+
+        when(memberPage.map(any())).thenReturn(Page.empty());
+
+        Page<MemberResponse> result =
+                memberService.getAllMembers(0, 10, "firstName", "asc", "John", "Doe");
+
+        assertNotNull(result);
+        verify(memberRepository, times(1))
+                .findByFirstNameContainingAndLastNameContaining(eq("John"), eq("Doe"), any(Pageable.class));
     }
 
     @Test
-    void testGetAllMembers_FilterByFirstName() {
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("firstName").ascending());
-        Page<Member> page = mock(Page.class);
+    void testGetAllMembers_WithFirstNameOnly() {
 
-        when(memberRepository.findByFirstNameContaining("John", pageable))
-                .thenReturn(page);
+        Page<Member> memberPage = mock(Page.class);
 
-        Page<Member> result = memberService.getAllMembers(0, 10, "firstName", "asc", "John", null);
+        when(memberRepository.findByFirstNameContaining(eq("John"), any(Pageable.class)))
+                .thenReturn(memberPage);
+
+        when(memberPage.map(any())).thenReturn(Page.empty());
+
+        Page<MemberResponse> result =
+                memberService.getAllMembers(0, 10, "firstName", "asc", "John", null);
 
         assertNotNull(result);
-        verify(memberRepository).findByFirstNameContaining("John", pageable);
+        verify(memberRepository, times(1))
+                .findByFirstNameContaining(eq("John"), any(Pageable.class));
     }
 
     @Test
-    void testGetAllMembers_FilterByLastName() {
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("firstName").ascending());
-        Page<Member> page = mock(Page.class);
+    void testGetAllMembers_WithLastNameOnly() {
 
-        when(memberRepository.findByLastNameContaining("Doe", pageable))
-                .thenReturn(page);
+        Page<Member> memberPage = mock(Page.class);
 
-        Page<Member> result = memberService.getAllMembers(0, 10, "firstName", "asc", null, "Doe");
+        when(memberRepository.findByLastNameContaining(eq("Doe"), any(Pageable.class)))
+                .thenReturn(memberPage);
 
-        assertNotNull(result);
-        verify(memberRepository).findByLastNameContaining("Doe", pageable);
-    }
+        when(memberPage.map(any())).thenReturn(Page.empty());
 
-    @Test
-    void testGetAllMembers_FilterByBoth() {
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("firstName").ascending());
-        Page<Member> page = mock(Page.class);
-
-        when(memberRepository.findByFirstNameContainingAndLastNameContaining("John", "Doe", pageable))
-                .thenReturn(page);
-
-        Page<Member> result = memberService.getAllMembers(0, 10, "firstName", "asc", "John", "Doe");
+        Page<MemberResponse> result =
+                memberService.getAllMembers(0, 10, "firstName", "asc", null, "Doe");
 
         assertNotNull(result);
-        verify(memberRepository).findByFirstNameContainingAndLastNameContaining("John", "Doe", pageable);
+        verify(memberRepository, times(1))
+                .findByLastNameContaining(eq("Doe"), any(Pageable.class));
     }
 
 

@@ -165,7 +165,6 @@ public class MemberControllerIT extends IntegrationTestBase {
         mockMvc.perform(delete("/api/v1/members/" + member.getId()))
                 .andExpect(status().isNoContent());
 
-        // verify delete
         assert (!memberRepository.findById(member.getId()).isPresent());
     }
 

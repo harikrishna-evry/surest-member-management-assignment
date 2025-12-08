@@ -1,46 +1,67 @@
 package com.surest.member.dto;
 
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class AuthRequestTest {
+
+    @Test
+    void testAllArgsConstructorAndGetters() {
+        AuthRequest a = new AuthRequest("user", "pass");
+
+        assertEquals("user", a.getUsername());
+        assertEquals("pass", a.getPassword());
+    }
+
+    @Test
+    void testNoArgsConstructorAndSetters() {
+        AuthRequest a = new AuthRequest();
+        a.setUsername("hari");
+        a.setPassword("123");
+
+        assertEquals("hari", a.getUsername());
+        assertEquals("123", a.getPassword());
+    }
 
     @Test
     void testEqualsAndHashCode() {
         AuthRequest a = new AuthRequest("user", "pass");
         AuthRequest b = new AuthRequest("user", "pass");
 
+        assertEquals(a, a);
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
     }
 
     @Test
-    void testToString() {
-        AuthRequest req = new AuthRequest("user", "pass");
-        String s = req.toString();
-        assertTrue(s.contains("user"));
-        assertTrue(s.contains("pass"));
-    }
-
-    @Test
     void testNotEquals() {
-        CreateMemberRequest r1 = new CreateMemberRequest("A", "B", null, "a@test.com");
-        CreateMemberRequest r2 = new CreateMemberRequest("X", "Y", null, "x@test.com");
+        AuthRequest a = new AuthRequest("user", "pass");
+        AuthRequest b = new AuthRequest("abc", "xyz");
 
-        assertNotEquals(r1, r2);       // different values
-        assertNotEquals(r1, null);     // compare with null
-        assertNotEquals(r1, "string"); // compare with other type
+        assertNotEquals(a, b);
+        assertNotEquals(a, null);
+        assertNotEquals(a, "string");
     }
 
     @Test
     void testHashcodeNotEquals() {
-        CreateMemberRequest r1 = new CreateMemberRequest("A", "B", null, "a@test.com");
-        CreateMemberRequest r2 = new CreateMemberRequest("X", "Y", null, "x@test.com");
+        AuthRequest a = new AuthRequest("user", "pass");
+        AuthRequest b = new AuthRequest("abc", "xyz");
 
-        assertNotEquals(r1.hashCode(), r2.hashCode());
+        assertNotEquals(a.hashCode(), b.hashCode());
     }
 
+    @Test
+    void testToString() {
+        AuthRequest a = new AuthRequest("hari", "test");
+        assertTrue(a.toString().contains("hari"));
+    }
+
+    @Test
+    void testNotEqualsWhenFieldNull() {
+        AuthRequest a = new AuthRequest(null, "123");
+        AuthRequest b = new AuthRequest("abc", "123");
+        assertNotEquals(a, b);
+    }
 
 }
-

@@ -13,9 +13,4 @@ public abstract class IntegrationTestBase {
     static {
         PostgresTestContainer.getInstance().start();
     }
-
-//    @BeforeAll
-//    static void beforeAll() {
-//        PostgresTestContainer.getInstance().start();
-//    }
 }

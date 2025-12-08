@@ -8,45 +8,64 @@ class AuthResponseTest {
 
 
     @Test
-    void testNoArgsConstructorAndSetters() {
-        AuthResponse response = new AuthResponse();
-        response.setToken("abcd1234");
-
-        assertEquals("abcd1234", response.getToken());
+    void testAllArgsConstructorAndGetter() {
+        AuthResponse r = new AuthResponse("abcd1234");
+        assertEquals("abcd1234", r.getToken());
     }
 
     @Test
-    void testAllArgsConstructor() {
-        AuthResponse response = new AuthResponse("jwt-token-123");
-        assertEquals("jwt-token-123", response.getToken());
+    void testNoArgsConstructorAndSetter() {
+        AuthResponse r = new AuthResponse();
+        r.setToken("xyz123");
+        assertEquals("xyz123", r.getToken());
     }
 
     @Test
-    void testToString() {
-        AuthResponse response = new AuthResponse("jwt-token-xyz");
+    void testEqualsAndHashcode() {
+        AuthResponse r1 = new AuthResponse("t");
+        AuthResponse r2 = new AuthResponse("t");
 
-        String str = response.toString();
-
-        assertNotNull(str);
-        assertTrue(str.contains("jwt-token-xyz"));
+        assertEquals(r1, r1);
+        assertEquals(r1, r2);
+        assertEquals(r1.hashCode(), r2.hashCode());
     }
 
     @Test
     void testNotEquals() {
-        CreateMemberRequest r1 = new CreateMemberRequest("A", "B", null, "a@test.com");
-        CreateMemberRequest r2 = new CreateMemberRequest("X", "Y", null, "x@test.com");
+        AuthResponse r1 = new AuthResponse("A");
+        AuthResponse r2 = new AuthResponse("B");
 
-        assertNotEquals(r1, r2);       // different values
-        assertNotEquals(r1, null);     // compare with null
-        assertNotEquals(r1, "string"); // compare with other type
+        assertNotEquals(r1, r2);
+        assertNotEquals(r1, null);
+        assertNotEquals(r1, "string");
     }
 
     @Test
     void testHashcodeNotEquals() {
-        CreateMemberRequest r1 = new CreateMemberRequest("A", "B", null, "a@test.com");
-        CreateMemberRequest r2 = new CreateMemberRequest("X", "Y", null, "x@test.com");
+        AuthResponse r1 = new AuthResponse("A");
+        AuthResponse r2 = new AuthResponse("B");
 
         assertNotEquals(r1.hashCode(), r2.hashCode());
+    }
+
+    @Test
+    void testToString() {
+        AuthResponse r = new AuthResponse("xyz");
+        assertTrue(r.toString().contains("xyz"));
+    }
+
+    @Test
+    void testNotEqualWithDifferentDTO() {
+        AuthResponse r1 = new AuthResponse("A");
+        CreateMemberRequest r2 = new CreateMemberRequest();
+        assertNotEquals(r1, r2);
+    }
+
+    @Test
+    void testNotEqualsWhenFieldNull() {
+        AuthResponse a = new AuthResponse(null);
+        AuthResponse b = new AuthResponse("token");
+        assertNotEquals(a, b);
     }
 
 }
