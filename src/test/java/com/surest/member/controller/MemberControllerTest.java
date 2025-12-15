@@ -1,6 +1,7 @@
 package com.surest.member.controller;
 
 import com.surest.member.dto.CreateMemberRequest;
+import com.surest.member.dto.MemberResponse;
 import com.surest.member.entity.Member;
 import com.surest.member.service.MemberService;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,12 +29,12 @@ public class MemberControllerTest {
     @Test
     void testFindById() {
         UUID id = UUID.randomUUID();
-        Member mockMember = new Member();
+        MemberResponse mockMember = new MemberResponse();
         mockMember.setId(id);
 
         when(memberService.getMemberById(id)).thenReturn(mockMember);
 
-        Member response = controller.findById(id).getBody();
+        MemberResponse response = controller.findById(id).getBody();
 
         assertNotNull(response);
         assertEquals(id, response.getId());
@@ -49,14 +50,14 @@ public class MemberControllerTest {
        req.setDateOfBirth(LocalDate.now().atStartOfDay());
 
 
-        Member saved = new Member();
+        MemberResponse saved = new MemberResponse();
         saved.setId(UUID.randomUUID());
         saved.setFirstName("John");
 
         when(memberService.createMember(any(CreateMemberRequest.class)))
                 .thenReturn(saved);
 
-        Member response = controller.createMember(req).getBody();
+        MemberResponse response = controller.createMember(req).getBody();
 
         assertNotNull(response);
         assertEquals("John", response.getFirstName());
@@ -70,14 +71,14 @@ public class MemberControllerTest {
         CreateMemberRequest req = new CreateMemberRequest();
         req.setFirstName("Updated");
 
-        Member updatedMember = new Member();
+        MemberResponse updatedMember = new MemberResponse();
         updatedMember.setId(id);
         updatedMember.setFirstName("Updated");
 
         when(memberService.updateMember(eq(id), any(CreateMemberRequest.class)))
                 .thenReturn(updatedMember);
 
-        Member response = controller.updateMember(id, req).getBody();
+        MemberResponse response = controller.updateMember(id, req).getBody();
 
         assertNotNull(response);
         assertEquals("Updated", response.getFirstName());

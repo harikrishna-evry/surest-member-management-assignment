@@ -3,48 +3,65 @@ package entity;
 import com.surest.member.entity.UserEntity;
 import com.surest.member.entity.UserRole;
 import org.junit.jupiter.api.Test;
+
 import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserEntityTest {
 
-
     @Test
-    void testUserEntityGettersAndSetters() {
+    void testGettersAndSetters() {
         UserEntity user = new UserEntity();
 
         UUID id = UUID.randomUUID();
-        String username = "hari";
-        String passwordHash = "hashed_password";
-
-
-        UserRole role = new UserRole();
-        role.setId(UUID.randomUUID());
-        role.setName("ROLE_USER");
-
+        UserRole role = new UserRole(UUID.randomUUID(), "ROLE_USER", 0L);
 
         user.setId(id);
-        user.setUsername(username);
-        user.setPasswordHash(passwordHash);
+        user.setUsername("hari");
+        user.setPasswordHash("123");
         user.setRole(role);
+        user.setVersion(1L);
 
-        // Verify values
         assertEquals(id, user.getId());
-        assertEquals(username, user.getUsername());
-        assertEquals(passwordHash, user.getPasswordHash());
+        assertEquals("hari", user.getUsername());
+        assertEquals("123", user.getPasswordHash());
         assertEquals(role, user.getRole());
+        assertEquals(1L, user.getVersion());
     }
 
     @Test
     void testAllArgsConstructor() {
         UUID id = UUID.randomUUID();
-        UserRole role = new UserRole(UUID.randomUUID(), "ROLE_ADMIN");
+        UserRole role = new UserRole(UUID.randomUUID(), "ROLE_ADMIN", 0L);
 
-        UserEntity user = new UserEntity(id, "admin", "pass123", role);
+        UserEntity user = new UserEntity(id, "admin", "pass", role, 2L);
 
         assertEquals(id, user.getId());
         assertEquals("admin", user.getUsername());
-        assertEquals("pass123", user.getPasswordHash());
+        assertEquals("pass", user.getPasswordHash());
         assertEquals(role, user.getRole());
+        assertEquals(2L, user.getVersion());
+    }
+
+    @Test
+    void testToStringNotThrow() {
+        UserEntity user = new UserEntity();
+        assertDoesNotThrow(user::toString);
+    }
+
+    @Test
+    void testHashCodeNotThrow() {
+        UserEntity user = new UserEntity();
+        assertDoesNotThrow(user::hashCode);
+    }
+
+    @Test
+    void testEqualsNotSame() {
+        UserEntity u1 = new UserEntity();
+        UserEntity u2 = new UserEntity();
+        u1.setId(UUID.randomUUID());
+        u2.setId(UUID.randomUUID());
+        assertNotEquals(u1, u2);
     }
 }

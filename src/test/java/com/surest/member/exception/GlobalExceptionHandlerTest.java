@@ -16,8 +16,6 @@ import static org.mockito.Mockito.when;
 
 public class GlobalExceptionHandlerTest {
 
-
-
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
 
     @Test
@@ -42,10 +40,9 @@ public class GlobalExceptionHandlerTest {
 
     @Test
     void testHandleMethodArgumentNotValidException() {
-        // Mock BindingResult
+
         BindingResult bindingResult = mock(BindingResult.class);
 
-        // Mock validation errors
         ObjectError error1 = new ObjectError("field1", "First name is required");
         error1.wrap(null);
         ObjectError error2 = new ObjectError("field2", "Last name is required");
@@ -53,7 +50,6 @@ public class GlobalExceptionHandlerTest {
 
         when(bindingResult.getAllErrors()).thenReturn(List.of(error1, error2));
 
-        // Create mock exception
         MethodArgumentNotValidException ex =
                 new MethodArgumentNotValidException(null, bindingResult);
 

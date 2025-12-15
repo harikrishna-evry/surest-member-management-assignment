@@ -15,7 +15,7 @@ public class NoSecurityConfig {
     public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .securityMatcher("/**")     // apply this filter chain to All urls
+                .securityMatcher("/**")
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 

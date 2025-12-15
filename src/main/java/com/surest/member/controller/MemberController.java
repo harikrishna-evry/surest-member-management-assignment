@@ -1,6 +1,7 @@
 package com.surest.member.controller;
 
 import com.surest.member.dto.CreateMemberRequest;
+import com.surest.member.dto.MemberResponse;
 import com.surest.member.entity.Member;
 import com.surest.member.service.MemberService;
 import jakarta.validation.Valid;
@@ -27,11 +28,11 @@ public class MemberController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<Member> findById(@PathVariable UUID id) {
+    public ResponseEntity<MemberResponse> findById(@PathVariable UUID id) {
 
         log.info("Received request: GET /api/v1/members/{}", id);
 
-        Member member = memberService.getMemberById(id);
+        MemberResponse member = memberService.getMemberById(id);
 
         return ResponseEntity.ok().body(member);
 
@@ -39,7 +40,7 @@ public class MemberController {
 
 
     @GetMapping
-    public Page<Member> getAllMembers(
+    public Page<MemberResponse> getAllMembers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "lastName") String sortBy,
@@ -58,20 +59,20 @@ public class MemberController {
 
 
     @PostMapping
-    public ResponseEntity<Member> createMember(@Valid @RequestBody CreateMemberRequest request) {
+    public ResponseEntity<MemberResponse> createMember(@Valid @RequestBody CreateMemberRequest request) {
         log.info("Received request: POST /api/v1/members");
 
-        Member member = memberService.createMember(request);
+        MemberResponse member = memberService.createMember(request);
 
         return new ResponseEntity<>(member, HttpStatus.CREATED);
     }
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<Member> updateMember(@PathVariable UUID id, @Valid @RequestBody CreateMemberRequest request) {
+    public ResponseEntity<MemberResponse> updateMember(@PathVariable UUID id, @Valid @RequestBody CreateMemberRequest request) {
         log.info("Received request: PUT /api/v1/members/{}", id);
 
-        Member updated = memberService.updateMember(id, request);
+        MemberResponse updated = memberService.updateMember(id, request);
 
         log.info("Member updated: {}", id);
         return ResponseEntity.ok(updated);
